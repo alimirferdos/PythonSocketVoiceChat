@@ -25,7 +25,7 @@ class ChatServer:
             client, client_address = self.socket.accept()
             print("%s:%s has connected." % client_address)
             client.send(bytes("SERVER: Greetings from the cave! Type your username and press enter!", "utf8"))
-            self.clients.append(client_address)
+            self.clients.append(client)
             Thread(target=self.handle_client, args=(client,)).start()
 
     def handle_client(self, client):
@@ -36,7 +36,7 @@ class ChatServer:
         client.send(bytes(welcome, "utf8"))
         msg = "%s has joined the chat!" % name
         print(msg)
-        self.client_names[client] = name
+        self.client_names[name] = self.clients.index(client)
 
         while True:
             msg = pickle.loads(client.recv(self.BUFFSIZE))
@@ -50,6 +50,8 @@ class ChatServer:
                     del self.clients[client]
                     print("%s has left the chat." % name)
                     break
+                elif msg['command'] == "call":
+                    print(self.client_names[msg['callee']])
             else:
                 print(name + ": " + msg)
 

@@ -58,7 +58,11 @@ class ChatClient:
 
     def get_client_list(self):
         self.send(pickle.dumps({"command": "get_clients"}))
+        self.call("Hossein")
         Timer(0.1, self.get_client_list).start()
+
+    def call(self, other_client):
+        self.send(pickle.dumps({"command": "call", "callee": other_client}))
 
 
 if __name__ == "__main__":
