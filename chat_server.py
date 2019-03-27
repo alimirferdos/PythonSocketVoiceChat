@@ -39,18 +39,19 @@ class ChatServer:
         self.client_names[client] = name
 
         while True:
-            msg = client.recv(self.BUFFSIZE)
-            if msg == bytes("get_clients", "utf8"):
-                self.send_client_list(client)
-            elif msg != bytes("{quit}", "utf8"):
-                print(name + ": " + msg)
+            msg = pickle.loads(client.recv(self.BUFFSIZE))
+            if type(msg) is dict:
+                if msg['command'] == "get_clients":
+                    self.send_client_list(client)
+                elif msg['command'] == "quit":
+                    # FIXME: when user exits this should happen!
+                    client.send(bytes("{quit}", "utf8"))
+                    client.close()
+                    del self.clients[client]
+                    print("%s has left the chat." % name)
+                    break
             else:
-                # FIXME: when user exits this should happen!
-                client.send(bytes("{quit}", "utf8"))
-                client.close()
-                del self.clients[client]
-                print("%s has left the chat." % name)
-                break
+                print(name + ": " + msg)
 
     def send_client_list(self, sock):
         sock.sendall(pickle.dumps(tuple(self.client_names.values())))

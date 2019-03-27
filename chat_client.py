@@ -43,18 +43,21 @@ class ChatClient:
 
     def send(self, msg):  # event is passed by binders.
         """Handles sending of messages."""
-        self.client_socket.send(bytes(msg, "utf8"))
-        if msg == "{quit}":
-            self.client_socket.close()
-            print("msg sent")
+        if type(msg) is not bytes:
+            self.client_socket.send(bytes(msg, "utf8"))
+        else:
+            self.client_socket.send(msg)
+            if msg == pickle.dumps({"command": "quite"}):
+                self.client_socket.close()
+                print("msg sent")
 
     @atexit.register
     def on_closing(self):
         """This function is to be called when the window is closed."""
-        self.send("{quite}")
+        self.send(pickle.dumps({"command": "quite"}))
 
     def get_client_list(self):
-        self.send("get_clients")
+        self.send(pickle.dumps({"command": "get_clients"}))
         Timer(0.1, self.get_client_list).start()
 
 
